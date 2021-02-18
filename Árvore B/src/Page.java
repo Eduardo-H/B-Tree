@@ -52,15 +52,12 @@ public class Page {
 	public void addSplitHelper(SplitHelper splitHelper) {
 		System.out.println("Entered in split helper addition!");
 		int i = nKeys;
-		
+
 		while(i > 0 && splitHelper.getNewData().getId() < keys[i-1].getId()) {
 			keys[i] = keys[i-1];
 			children[i+1] = children[i];
 			i--;
 		}
-		
-//		if (i == nKeys)
-//			i--;
 			
 		keys[i] = splitHelper.getNewData();
 		children[i+1] = splitHelper.getRightChild();
@@ -143,5 +140,16 @@ public class Page {
 		
 		pageString += "\n----------------------------------\n";
 		return pageString;
+	}
+	
+	public void refreshNKeys() {
+		int i = 0;
+		for (i = 0; i < keys.length; i++) {
+			if (keys[i] == null) {
+				break;
+			}
+		}
+		
+		nKeys = i;
 	}
 }
