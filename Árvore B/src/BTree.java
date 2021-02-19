@@ -20,12 +20,8 @@ public class BTree {
 			if (root.getnKeys() == degree) {
 				// Split function
 				SplitHelper splitHelper = split(root, new SplitHelper(null, key, root));
-				Page newPage = new Page(degree, false);
 				
-				newPage.addKey(splitHelper.getKey());
-				newPage.addChild(splitHelper.getCurrentPage(), 0);
-				newPage.addChild(splitHelper.getRightChild(), 1);
-				root = newPage;
+				root = addNewPage(splitHelper);
 			} else {
 				addOnLeaf(root, null, key);
 			}
@@ -90,8 +86,52 @@ public class BTree {
 					
 					return new SplitHelper(null, null, currentPage);
 				} else {
+					// Verifing if this is the root
+					if (parent == null) {
+						System.out.println("At the root and no parent. Page: " + currentPage);
+						SplitHelper newSplitHelper = split(currentPage, splitHelper);
+						
+						// Creating the new page
+						Page newPage = addNewPage(newSplitHelper);
+						
+						
+						// Finding the page where the key of the first split is
+						flag = false;
+						Page auxPage = null;
+						
+						for (i = 0; i < newPage.getnKeys(); i++) {
+							if (newPage.getKey(i).getId() > key.getId()) {
+								auxPage = newPage.getChild(i);
+								flag = true;
+								break;
+							}
+						}
+						
+						if (!flag) {
+							auxPage = newPage.getChild(i);
+						}
+						
+						// Adding the childrens of the child
+						auxPage.addChild(splitHelper.getCurrentPage(), auxPage.findKey(splitHelper.getKey()));
+						auxPage.addChild(splitHelper.getRightChild(), auxPage.findKey(splitHelper.getKey()) + 1);
+						
+						root = newPage;
+						return null;
+					}
+					
+					// TODO
+					System.out.println("At the root. Page: " + currentPage);
 					SplitHelper newSplitHelper = split(currentPage, splitHelper);
-					currentPage = newSplitHelper.getCurrentPage();
+					
+					if (splitHelper.getKey().getId() < newSplitHelper.getKey().getId()) {
+						// It's going to the left child
+						
+					} else if(splitHelper.getKey().getId() > newSplitHelper.getKey().getId()) {
+						// It's going to the right child
+					}
+					
+//					currentPage = newSplitHelper.getCurrentPage();
+					
 					return newSplitHelper;
 				}
 			}
@@ -124,7 +164,7 @@ public class BTree {
 			if (currentPage.getKey(i).getId() < insertOnParent.getId()) {
 				leftPage.addKey(currentPage.getKey(i));
 				leftPage.addChild(currentPage.getChild(i), addLeft);
-				addLeft++;
+				leftPage.addChild(currentPage.getChild(i + 1), addLeft + 1);
 			} else if (currentPage.getKey(i).getId() > insertOnParent.getId()) {
 				rightPage.addKey(currentPage.getKey(i));
 				rightPage.addChild(currentPage.getChild(i), addRight);
@@ -153,6 +193,16 @@ public class BTree {
 		rightPage.refreshNKeys();
 		
 		return newSplitHelper;
+	}
+	
+	public Page addNewPage(SplitHelper splitHelper) {
+		Page newPage = new Page(degree, false);
+		
+		newPage.addKey(splitHelper.getKey());
+		newPage.addChild(splitHelper.getCurrentPage(), 0);
+		newPage.addChild(splitHelper.getRightChild(), 1);
+		
+		return newPage;
 	}
 	
 	public void getData(int id) {

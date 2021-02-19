@@ -14,7 +14,7 @@ public class Page {
 		this.children = new Page[degree+1];
 		this.nKeys = 0;
 	}
-
+	
 	public int getDegree() {
 		return degree;
 	}
@@ -72,6 +72,16 @@ public class Page {
 		}
 		
 		nKeys = i;
+	}
+	
+	public int findKey(Data key) {
+		for (int i = 0; i < nKeys; i++) {
+			if (keys[i].getId() == key.getId()) {
+				return i;
+			}
+		}
+		
+		return -1;
 	}
 	
 	public Page getChild(int pos) {
