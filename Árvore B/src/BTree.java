@@ -32,29 +32,29 @@ public class BTree {
 		} else {
 			SplitHelper splitHelper = insert(root, null, key);
 			
-			if (splitHelper != null) {
-				if (splitHelper.getNewData() != null) {
-					if (root.getnKeys() < degree) {
-						if (splitHelper.getRightChild() != null) {
-							System.out.println("Entrando no Split Helper do root " + key.getId());
-							root.addSplitHelper(splitHelper);
-						} else {
-							root.addKey(splitHelper.getNewData());
-						}
-					} else {
-						SplitHelper newSplitHelper = split(root, new SplitHelper(null, key, root));
-						Page newPage = new Page(degree, false);
-						
-						newPage.addKey(newSplitHelper.getNewData());
-						newPage.addChild(newSplitHelper.getCurrentPage(), 0);
-						newPage.addChild(newSplitHelper.getRightChild(), 1);
-						
-						root = newPage;
-					}
-				}
-				
-				return;
-			}
+//			if (splitHelper != null) {
+//				if (splitHelper.getNewData() != null) {
+//					if (root.getnKeys() < degree) {
+//						if (splitHelper.getRightChild() != null) {
+//							System.out.println("Entrando no Split Helper do root " + key.getId());
+//							root.addSplitHelper(splitHelper);
+//						} else {
+//							root.addKey(splitHelper.getNewData());
+//						}
+//					} else {
+//						SplitHelper newSplitHelper = split(root, new SplitHelper(null, key, root));
+//						Page newPage = new Page(degree, false);
+//						
+//						newPage.addKey(newSplitHelper.getNewData());
+//						newPage.addChild(newSplitHelper.getCurrentPage(), 0);
+//						newPage.addChild(newSplitHelper.getRightChild(), 1);
+//						
+//						root = newPage;
+//					}
+//				}
+//				
+//				return;
+//			}
 		}
 	}
 	
@@ -83,7 +83,9 @@ public class BTree {
 			if (currentPage.getKey(i).getId() > key.getId()) {
 				splitHelper = insert(currentPage.getChild(i), currentPage, key);
 				if (splitHelper != null) {
-					currentPage = splitHelper.getCurrentPage();
+					if (splitHelper.getNewData() != null) {
+						currentPage.addChild(splitHelper.getCurrentPage(), i);
+					}
 				}
 				flag = true;
 				break;
@@ -94,7 +96,9 @@ public class BTree {
 		if (!flag && !currentPage.isLeaf()) {
 			splitHelper = insert(currentPage.getChild(i), currentPage, key);
 			if (splitHelper != null) {
-				currentPage = splitHelper.getCurrentPage();
+				if (splitHelper.getNewData() != null) {
+					currentPage.addChild(splitHelper.getCurrentPage(), i);
+				}
 			}
 		}
 		
