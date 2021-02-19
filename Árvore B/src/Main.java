@@ -5,7 +5,6 @@ public class Main {
 	public static void main(String args[]) {
 		int degree, choice, id;
 		Scanner reader = new Scanner(System.in);
-		Data key = null;
 		
 		System.out.print("Type the number of keys per page: ");
 		degree = reader.nextInt();
@@ -36,10 +35,10 @@ public class Main {
 					break;
 				case 2:
 					System.out.print("Type the value to be searched: ");
-					key = bt.getData(reader.nextInt());
+					id = reader.nextInt();
 					
-					if (key != null) {
-						System.out.println("\nThe value " + key.getId() + " was found in the tree!");
+					if (bt.getData(id) != null) {
+						System.out.println("\nThe value was found in the tree!");
 					} else {
 						System.out.println("\nValue not found in the tree.");
 					}

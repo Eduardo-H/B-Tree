@@ -233,23 +233,19 @@ public class BTree {
 			if (currentPage.getKey(i).getId() > id) {
 				if (currentPage.getChild(i) != null) {
 					key = getData(currentPage.getChild(i), id);
-					flag = true;
 					break;
-				} else {
-					return null;
 				}
+				flag = true;
 			}
 		}
 		
 		if (!flag) {
 			if (currentPage.getChild(i) != null) {
 				key = getData(currentPage.getChild(i), id);
-			} else {
-				return null;
 			}
 		}
 		
-		return null;
+		return key;
 	}
 	
 	public void deleteData(int id) {
