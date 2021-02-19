@@ -78,6 +78,7 @@ public class BTree {
 		if (splitHelper != null) {
 			if (splitHelper.getKey() != null) {
 				if (currentPage.getnKeys() < degree) {
+					System.out.println("Split made, current page is not full. Key to be added: " + splitHelper.getKey());
 					if (splitHelper.getRightChild() != null) {
 						currentPage.addSplitHelper(splitHelper);
 					} else {
@@ -86,14 +87,12 @@ public class BTree {
 					
 					return new SplitHelper(null, null, currentPage);
 				} else {
-					// Verifing if this is the root
+					// Verifing if the current page is the root
 					if (parent == null) {
-						System.out.println("At the root and no parent. Page: " + currentPage);
 						SplitHelper newSplitHelper = split(currentPage, splitHelper);
 						
 						// Creating the new page
 						Page newPage = addNewPage(newSplitHelper);
-						
 						
 						// Finding the page where the key of the first split is
 						flag = false;
@@ -112,27 +111,38 @@ public class BTree {
 						}
 						
 						// Adding the childrens of the child
-						auxPage.addChild(splitHelper.getCurrentPage(), auxPage.findKey(splitHelper.getKey()));
-						auxPage.addChild(splitHelper.getRightChild(), auxPage.findKey(splitHelper.getKey()) + 1);
+						auxPage.addChild(splitHelper.getCurrentPage(), auxPage.findKeyOnPage(splitHelper.getKey()));
+						auxPage.addChild(splitHelper.getRightChild(), auxPage.findKeyOnPage(splitHelper.getKey()) + 1);
 						
+						// Setting the newly created page as the root
 						root = newPage;
 						return null;
-					}
-					
-					// TODO
-					System.out.println("At the root. Page: " + currentPage);
-					SplitHelper newSplitHelper = split(currentPage, splitHelper);
-					
-					if (splitHelper.getKey().getId() < newSplitHelper.getKey().getId()) {
-						// It's going to the left child
+					} else {
+						SplitHelper newSplitHelper = split(currentPage, splitHelper);
+						int index;						
 						
-					} else if(splitHelper.getKey().getId() > newSplitHelper.getKey().getId()) {
-						// It's going to the right child
+						System.out.println("Split made, current page is full. Key to be added: " + splitHelper.getKey());
+						
+						// Adding the key from the first split and its childrens
+						if (splitHelper.getKey().getId() < newSplitHelper.getRightChild().getKey(0).getId()) {
+							// Going to the current page
+							// newSplitHelper.getCurrentPage().addSplitHelper(splitHelper);
+							// Adding the left page
+							index = newSplitHelper.getCurrentPage().findKeyOnPage(splitHelper.getKey());
+							newSplitHelper.getCurrentPage().addChild(splitHelper.getCurrentPage(), index);
+						} else {
+							// Going to the right child
+							// newSplitHelper.getRightChild().addSplitHelper(splitHelper);
+							// Adding the left page
+							index = newSplitHelper.getRightChild().findKeyOnPage(splitHelper.getKey());
+							newSplitHelper.getRightChild().addChild(splitHelper.getCurrentPage(), index);
+						}
+						
+						
+						currentPage = newSplitHelper.getCurrentPage();
+						
+						return newSplitHelper;
 					}
-					
-//					currentPage = newSplitHelper.getCurrentPage();
-					
-					return newSplitHelper;
 				}
 			}
 		}
@@ -164,7 +174,7 @@ public class BTree {
 			if (currentPage.getKey(i).getId() < insertOnParent.getId()) {
 				leftPage.addKey(currentPage.getKey(i));
 				leftPage.addChild(currentPage.getChild(i), addLeft);
-				leftPage.addChild(currentPage.getChild(i + 1), addLeft + 1);
+				leftPage.addChild(currentPage.getChild(i + 1), addLeft + 1); // To be fixed
 			} else if (currentPage.getKey(i).getId() > insertOnParent.getId()) {
 				rightPage.addKey(currentPage.getKey(i));
 				rightPage.addChild(currentPage.getChild(i), addRight);

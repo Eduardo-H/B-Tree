@@ -74,7 +74,7 @@ public class Page {
 		nKeys = i;
 	}
 	
-	public int findKey(Data key) {
+	public int findKeyOnPage(Data key) {
 		for (int i = 0; i < nKeys; i++) {
 			if (keys[i].getId() == key.getId()) {
 				return i;
