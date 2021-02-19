@@ -2,15 +2,13 @@
 public class SplitHelper {
 
 	private Page rightChild;
-	private Data newData;
+	private Data key;
 	private Page currentPage;
 	
-
-	
-	public SplitHelper(Page rightChild, Data newData, Page currentPage) {
+	public SplitHelper(Page rightChild, Data key, Page currentPage) {
 		super();
 		this.rightChild = rightChild;
-		this.newData = newData;
+		this.key = key;
 		this.currentPage = currentPage;
 	}
 
@@ -22,12 +20,12 @@ public class SplitHelper {
 		this.rightChild = rightChild;
 	}
 	
-	public Data getNewData() {
-		return newData;
+	public Data getKey() {
+		return key;
 	}
 	
-	public void setNewData(Data newData) {
-		this.newData = newData;
+	public void setKey(Data key) {
+		this.key = key;
 	}
 	
 	public Page getCurrentPage() {

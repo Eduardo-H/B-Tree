@@ -50,30 +50,30 @@ public class Page {
 	}
 	
 	public void addSplitHelper(SplitHelper splitHelper) {
-		System.out.println("Entered in split helper addition!");
 		int i = nKeys;
 
-		while(i > 0 && splitHelper.getNewData().getId() < keys[i-1].getId()) {
+		while(i > 0 && splitHelper.getKey().getId() < keys[i-1].getId()) {
 			keys[i] = keys[i-1];
 			children[i+1] = children[i];
 			i--;
 		}
 			
-		keys[i] = splitHelper.getNewData();
+		keys[i] = splitHelper.getKey();
 		children[i+1] = splitHelper.getRightChild();
 		nKeys++;
 	}
 	
-	public int findKey(Data key) {
-		for (int i = 0; i < nKeys; i++) {
-			if (keys[i].getId() == key.getId()) {
-				return i;
+	public void refreshNKeys() {
+		int i = 0;
+		for (i = 0; i < keys.length; i++) {
+			if (keys[i] == null) {
+				break;
 			}
 		}
 		
-		return -1;
+		nKeys = i;
 	}
-
+	
 	public Page getChild(int pos) {
 		return children[pos];
 	}
@@ -132,24 +132,10 @@ public class Page {
 				}
 				
 				pageString += "\n\nChildren " + i + " -> [" + children[i] + "]";
-				// continue;
 			}
-			
-			// pageString += "\nChildren " + i + " -> [" + children[i] + "]";
 		}
 		
 		pageString += "\n----------------------------------\n";
 		return pageString;
-	}
-	
-	public void refreshNKeys() {
-		int i = 0;
-		for (i = 0; i < keys.length; i++) {
-			if (keys[i] == null) {
-				break;
-			}
-		}
-		
-		nKeys = i;
 	}
 }

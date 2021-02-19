@@ -22,7 +22,7 @@ public class BTree {
 				SplitHelper splitHelper = split(root, new SplitHelper(null, key, root));
 				Page newPage = new Page(degree, false);
 				
-				newPage.addKey(splitHelper.getNewData());
+				newPage.addKey(splitHelper.getKey());
 				newPage.addChild(splitHelper.getCurrentPage(), 0);
 				newPage.addChild(splitHelper.getRightChild(), 1);
 				root = newPage;
@@ -30,31 +30,7 @@ public class BTree {
 				addOnLeaf(root, null, key);
 			}
 		} else {
-			SplitHelper splitHelper = insert(root, null, key);
-			
-//			if (splitHelper != null) {
-//				if (splitHelper.getNewData() != null) {
-//					if (root.getnKeys() < degree) {
-//						if (splitHelper.getRightChild() != null) {
-//							System.out.println("Entrando no Split Helper do root " + key.getId());
-//							root.addSplitHelper(splitHelper);
-//						} else {
-//							root.addKey(splitHelper.getNewData());
-//						}
-//					} else {
-//						SplitHelper newSplitHelper = split(root, new SplitHelper(null, key, root));
-//						Page newPage = new Page(degree, false);
-//						
-//						newPage.addKey(newSplitHelper.getNewData());
-//						newPage.addChild(newSplitHelper.getCurrentPage(), 0);
-//						newPage.addChild(newSplitHelper.getRightChild(), 1);
-//						
-//						root = newPage;
-//					}
-//				}
-//				
-//				return;
-//			}
+			insert(root, null, key);
 		}
 	}
 	
@@ -68,8 +44,6 @@ public class BTree {
 				return null;
 			} else {
 				currentPage = splitHelper.getCurrentPage();
-				System.out.println("Current PAGE" + currentPage);
-				System.out.println("Right Child" + splitHelper.getRightChild());
 				return splitHelper;
 			}
 		}
@@ -78,12 +52,12 @@ public class BTree {
 		Boolean flag = false;
 		
 		for (i = 0; i < currentPage.getnKeys(); i++) {
-			// Verifica se o valor atual é maior que o novo a ser inserido
-			// Sees if the current key value is grater than the new key value
+			// Verifies if the current key value is grater 
+			// than the new key value
 			if (currentPage.getKey(i).getId() > key.getId()) {
 				splitHelper = insert(currentPage.getChild(i), currentPage, key);
 				if (splitHelper != null) {
-					if (splitHelper.getNewData() != null) {
+					if (splitHelper.getKey() != null) {
 						currentPage.addChild(splitHelper.getCurrentPage(), i);
 					}
 				}
@@ -92,28 +66,26 @@ public class BTree {
 			}
 		}
 		
-		// Verifica se o valor a ser inserido é maior que todos os presentes na página atual
+		// Verifies if the value to be added is greater 
+		// than all existing in the current page
 		if (!flag && !currentPage.isLeaf()) {
 			splitHelper = insert(currentPage.getChild(i), currentPage, key);
 			if (splitHelper != null) {
-				if (splitHelper.getNewData() != null) {
+				if (splitHelper.getKey() != null) {
 					currentPage.addChild(splitHelper.getCurrentPage(), i);
 				}
 			}
 		}
 		
-		// Após o possível SPLIT
+		// After possible SPLIT
 		
 		if (splitHelper != null) {
-			if (splitHelper.getNewData() != null) {
-				System.out.println("Tem um valor a ser adicionado no pai (resultante do split)");
+			if (splitHelper.getKey() != null) {
 				if (currentPage.getnKeys() < degree) {
 					if (splitHelper.getRightChild() != null) {
-						System.out.println("A página atual não está lotada e o valor a ser adicionado tem filho a direita");
 						currentPage.addSplitHelper(splitHelper);
 					} else {
-						System.out.println("A página atual não está lotada e o valor a ser adicionado não tem filho a direita");
-						currentPage.addKey(splitHelper.getNewData());
+						currentPage.addKey(splitHelper.getKey());
 					}
 					
 					return new SplitHelper(null, null, currentPage);
@@ -146,7 +118,8 @@ public class BTree {
 		
 		int addLeft = 0, addRight = 0;
 		
-		// Verificando qual chave vai para o filho da esquerda e qual vai para o da direita
+		// Verifing wich key goes to the left page 
+		// and wich goes to the right page
 		for (int i = 0; i < currentPage.getnKeys(); i++) {
 			if (currentPage.getKey(i).getId() < insertOnParent.getId()) {
 				leftPage.addKey(currentPage.getKey(i));
@@ -159,20 +132,18 @@ public class BTree {
 			}
 		}
 		
-		// Adicionando o novo valor
-		if (splitHelper.getNewData().getId() < rightPage.getKey(0).getId()) {
+		// Adding the new value
+		if (splitHelper.getKey().getId() < rightPage.getKey(0).getId()) {
 			if (splitHelper.getRightChild() != null) {
-				System.out.println("Entrando no split helper da esquerda " + splitHelper.getNewData().getId());
 				leftPage.addSplitHelper(splitHelper);
 			} else {
-				leftPage.addKey(splitHelper.getNewData());
+				leftPage.addKey(splitHelper.getKey());
 			}
 		} else {
 			if (splitHelper.getRightChild() != null) {
-				System.out.println("Entrando no split helper da direita " + splitHelper.getNewData().getId());
 				rightPage.addSplitHelper(splitHelper);
 			} else {
-				rightPage.addKey(splitHelper.getNewData());
+				rightPage.addKey(splitHelper.getKey());
 			}
 		}
 
@@ -182,14 +153,6 @@ public class BTree {
 		rightPage.refreshNKeys();
 		
 		return newSplitHelper;
-	}
-	
-	public boolean isFull(Page page) {
-		if (page.getnKeys() == degree) {
-			return true;
-		}
-		
-		return false;
 	}
 	
 	public void getData(int id) {
