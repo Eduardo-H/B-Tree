@@ -18,7 +18,7 @@ public class BTree {
 		
 		if (root.isLeaf()) {
 			if (root.getnKeys() == degree) {
-				// Split function
+				// Needs to split
 				SplitHelper splitHelper = split(root, new SplitHelper(null, key, root));
 				
 				root = addNewPage(splitHelper);
@@ -73,12 +73,10 @@ public class BTree {
 			}
 		}
 		
-		// After possible SPLIT
-		
+		// After the possible SPLIT
 		if (splitHelper != null) {
 			if (splitHelper.getKey() != null) {
 				if (currentPage.getnKeys() < degree) {
-					System.out.println("Split made, current page is not full. Key to be added: " + splitHelper.getKey());
 					if (splitHelper.getRightChild() != null) {
 						currentPage.addSplitHelper(splitHelper);
 					} else {
@@ -93,23 +91,8 @@ public class BTree {
 						
 						// Creating the new page
 						Page newPage = addNewPage(newSplitHelper);
-						
 						// Finding the page where the key of the first split is
-						flag = false;
-						Page auxPage = null;
-						
-						for (i = 0; i < newPage.getnKeys(); i++) {
-							if (newPage.getKey(i).getId() > key.getId()) {
-								auxPage = newPage.getChild(i);
-								flag = true;
-								break;
-							}
-						}
-						
-						if (!flag) {
-							auxPage = newPage.getChild(i);
-						}
-						
+						Page auxPage = findPage(newPage, splitHelper.getKey());
 						// Adding the childrens of the child
 						auxPage.addChild(splitHelper.getCurrentPage(), auxPage.findKeyOnPage(splitHelper.getKey()));
 						auxPage.addChild(splitHelper.getRightChild(), auxPage.findKeyOnPage(splitHelper.getKey()) + 1);
@@ -119,25 +102,20 @@ public class BTree {
 						return null;
 					} else {
 						SplitHelper newSplitHelper = split(currentPage, splitHelper);
-						int index;						
-						
-						System.out.println("Split made, current page is full. Key to be added: " + splitHelper.getKey());
+						int index;
 						
 						// Adding the key from the first split and its childrens
 						if (splitHelper.getKey().getId() < newSplitHelper.getRightChild().getKey(0).getId()) {
 							// Going to the current page
-							// newSplitHelper.getCurrentPage().addSplitHelper(splitHelper);
 							// Adding the left page
 							index = newSplitHelper.getCurrentPage().findKeyOnPage(splitHelper.getKey());
 							newSplitHelper.getCurrentPage().addChild(splitHelper.getCurrentPage(), index);
 						} else {
 							// Going to the right child
-							// newSplitHelper.getRightChild().addSplitHelper(splitHelper);
 							// Adding the left page
 							index = newSplitHelper.getRightChild().findKeyOnPage(splitHelper.getKey());
 							newSplitHelper.getRightChild().addChild(splitHelper.getCurrentPage(), index);
 						}
-						
 						
 						currentPage = newSplitHelper.getCurrentPage();
 						
@@ -174,7 +152,7 @@ public class BTree {
 			if (currentPage.getKey(i).getId() < insertOnParent.getId()) {
 				leftPage.addKey(currentPage.getKey(i));
 				leftPage.addChild(currentPage.getChild(i), addLeft);
-				leftPage.addChild(currentPage.getChild(i + 1), addLeft + 1); // To be fixed
+				leftPage.addChild(currentPage.getChild(i + 1), addLeft + 1); // Needs fixing
 			} else if (currentPage.getKey(i).getId() > insertOnParent.getId()) {
 				rightPage.addKey(currentPage.getKey(i));
 				rightPage.addChild(currentPage.getChild(i), addRight);
@@ -215,8 +193,63 @@ public class BTree {
 		return newPage;
 	}
 	
-	public void getData(int id) {
+	public Page findPage(Page currentPage, Data key) {
+		Boolean flag = false;
+		Page auxPage = null;
+		int i = 0;
 		
+		for (i = 0; i < currentPage.getnKeys(); i++) {
+			if (currentPage.getKey(i).getId() > key.getId()) {
+				auxPage = currentPage.getChild(i);
+				flag = true;
+				break;
+			}
+		}
+		
+		if (!flag) {
+			auxPage = currentPage.getChild(i);
+		}
+		
+		return auxPage;
+	}
+	
+	public Data getData(int id) {
+		if (root != null)
+			return getData(root, id);
+			
+		return null;
+	}
+	
+	public Data getData(Page currentPage, int id) {
+		Data key = null;
+		Boolean flag = false;
+		int i;
+		
+		for (i = 0; i < currentPage.getnKeys(); i++) {
+			if (currentPage.getKey(i).getId() == id) {
+				return currentPage.getKey(i);
+			}
+			
+			if (currentPage.getKey(i).getId() > id) {
+				if (currentPage.getChild(i) != null) {
+					key = getData(currentPage.getChild(i), id);
+					flag = true;
+					break;
+				} else {
+					return null;
+				}
+			}
+		}
+		
+		if (!flag) {
+			if (currentPage.getChild(i) != null) {
+				key = getData(currentPage.getChild(i), id);
+			} else {
+				return null;
+			}
+		}
+		
+		return null;
 	}
 	
 	public void deleteData(int id) {
