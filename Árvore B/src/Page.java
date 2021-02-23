@@ -84,6 +84,34 @@ public class Page {
 		return -1;
 	}
 	
+	public void removeKey(int id) {
+		int i;
+		
+		if (nKeys == 1) {
+			keys[0] = null;
+		} else {
+			i = 0;
+			while (i < nKeys) {
+				if (keys[i].getId() == id) {
+					for (int y = i; y <= nKeys-1; y++) {
+						if (y == nKeys-1) {
+							keys[y] = null;
+							children[y] = children[y+1];
+							children[y+1] = null;
+							break;
+						} else {
+							keys[y] = keys[y+1];
+							children[y] = children[y+1];
+						}
+					}
+					
+					break;
+				}
+				i++;
+			}
+		}
+	}
+	
 	public Page getChild(int pos) {
 		return children[pos];
 	}

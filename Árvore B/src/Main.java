@@ -46,7 +46,7 @@ public class Main {
 					
 				case 3:
 					System.out.print("Type the value to be removed: ");
-					// bt.remove(reader.nextInt());
+					bt.deleteData(reader.nextInt());
 					break;
 				case 4:
 					System.out.println(bt.toString()); 

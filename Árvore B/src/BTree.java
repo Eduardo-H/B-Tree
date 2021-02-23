@@ -249,20 +249,178 @@ public class BTree {
 	}
 	
 	public void deleteData(int id) {
+		deleteData(root, null, 0, id);
+	}
+	
+	public Page deleteData(Page currentPage, Page parent, int pos, int id) {
+		Boolean flag = false;
+		int i;
 		
+		currentPage.refreshNKeys();
+		
+		for (i = 0; i < currentPage.getnKeys(); i++) {
+			if (currentPage.getKey(i).getId() == id) {
+				if (currentPage.isLeaf()) {
+					// Delete and verify nKeys
+					currentPage.removeKey(id);
+					currentPage.refreshNKeys();
+					
+					// Verifies if the number of keys is lower than the minimum number of keys of the page
+					if (currentPage.getnKeys() < Math.floor(degree / 2) && parent != null) {
+						Boolean redistributed = redistribute(currentPage, parent, pos, i, id);
+						
+						// Needs merge
+						if (!redistributed) {
+							merge(currentPage, parent, pos, id);
+						}
+					}
+				} else {
+					// Delete and call findRightMost function
+					Data key = findRightMost(currentPage.getChild(i), currentPage.getKey(i));
+					System.out.println("The right most: " + key.getId());
+					currentPage.addKey(key, i);
+					
+					deleteData(currentPage.getChild(i), currentPage, i, id);
+				}
+			} else if (currentPage.getKey(i).getId() > id) {
+				if (currentPage.getChild(i) != null) {
+					// Moving to the left child
+					deleteData(currentPage.getChild(i), currentPage, i, id);
+				} else {
+					return null;
+				}
+				
+				flag = true;
+			}
+		}
+		
+		if (!flag) {
+			
+		}
+		
+		return currentPage;
 	}
 	
-	public Data findRightMost(Page page) {
-		//TODO: 
-		return null;
+	public Data findRightMost(Page currentPage, Data currentKey) {
+		Data key = null;
+		
+		if (currentPage.isLeaf()) {
+			key = currentPage.getKey(currentPage.getnKeys() - 1);
+			currentPage.addKey(currentKey, currentPage.getnKeys() -1);
+		} else {
+			key = findRightMost(currentPage.getChild(currentPage.getnKeys()), currentKey);
+		}
+		
+		return key;
 	}
 	
-	public void merge() {
-		//TODO
+	public Data findRightMost(Page currentPage) {
+		Data key = null;
+		
+		if (currentPage.isLeaf()) {
+			return currentPage.getKey(currentPage.getnKeys() - 1);
+		} else {
+			key = findRightMost(currentPage.getChild(currentPage.getnKeys()));
+		}
+		
+		return key;
 	}
 	
-	public void redistribute() {
-		//TODO
+	// * Merge: merges two pages in to one 
+	// ** Rule: the sum between the merger page and the merged page needs to be equals to nKeys - 1
+	public void merge(Page currentPage, Page parent, int pos, int id) {
+		System.out.println("Entrou na função de merge!");
+		
+		int parentPos;
+		
+		if (pos - 1 >= 0) {
+			parentPos = pos - 1;
+		} else {
+			parentPos = 0;
+		}
+		
+		if (parent.getChild(parentPos) != null) {
+			// Adicionando todos os valores da página irmã na página atual
+			for (int y = 0; y < parent.getChild(parentPos).getnKeys(); y++) {
+				currentPage.addKey(parent.getChild(parentPos).getKey(y));
+			}
+			// Adicionando o valor do pai na página atual
+			currentPage.addKey(parent.getKey(parentPos));
+			// Removendo o valor que foi adicionado na página atual da página pai
+			// e atualizando as posições
+			parent.removeKey(parent.getKey(parentPos).getId());
+			
+			parent.refreshNKeys();
+			return;
+		}
+		
+		parentPos += 2;
+		
+		if (parent.getChild(parentPos) != null) {
+			// Adicionando todos os valores da página irmã na página atual
+			for (int y = 0; y < parent.getChild(parentPos).getnKeys(); y++) {
+				currentPage.addKey(parent.getChild(parentPos).getKey(y));
+			}
+			// Adicionando o valor do pai na página atual
+			currentPage.addKey(parent.getKey(pos));
+			// Removendo o valor que foi adicionado na página atual da página pai
+			// e atualizando as posições
+			parent.removeKey(parent.getKey(pos).getId());
+			
+			parent.refreshNKeys();
+			return;
+		}
+	}
+	
+	// * Redistribution: transfers a key from a page to another
+	// ** Rule: the number of keys of the page that will transfer needs to be greater than the minimum value of keys
+	public Boolean redistribute(Page currentPage, Page parent, int pos, int index, int id) {
+		System.out.println("Entou na função de redistribuição");
+		int parentPos;
+		
+		if (pos - 1 >= 0) {
+			parentPos = pos - 1;
+		} else {
+			parentPos = 0;
+		}
+		
+		if (parent.getChild(parentPos) != null) {
+			if (parent.getChild(parentPos).getnKeys() > Math.floor(degree / 2)) {
+				System.out.println("Irá receber do irmão da esquerda");
+				// Adicionando o valor do pai na página atual
+				currentPage.addKey(parent.getKey(parentPos), index);
+				
+				Data rightMost = findRightMost(parent.getChild(parentPos));
+				// Adicionando o valor mais a direita da página irmã à esquerda no pai
+				parent.addKey(rightMost, parentPos);
+				// Removendo o valor da página irmã à esquerda
+				parent.getChild(parentPos).removeKey(rightMost.getId());
+				
+				parent.refreshNKeys();
+				parent.getChild(parentPos).refreshNKeys();
+				return true;
+			}
+		}
+		
+		parentPos += 2;
+		
+		if (parent.getChild(parentPos) != null) {
+			if (parent.getChild(parentPos).getnKeys() > Math.floor(degree / 2)) {
+				System.out.println("Irá receber do irmão da direita");
+				// Adicionando o valor do pai na página atual
+				currentPage.addKey(parent.getKey(pos));
+				// Adicionando o valor mais a esquerda da página irmã à direita no pai
+				parent.addKey(parent.getChild(parentPos).getKey(0), pos);
+				// Removendo o valor mais a esquerda da página irmã à direita
+				parent.getChild(parentPos).removeKey(parent.getKey(pos).getId());
+			
+				parent.refreshNKeys();
+				parent.getChild(parentPos).refreshNKeys();
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	public void inOrder() {
