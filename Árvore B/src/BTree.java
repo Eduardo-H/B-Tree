@@ -260,6 +260,7 @@ public class BTree {
 		
 		for (i = 0; i < currentPage.getnKeys(); i++) {
 			if (currentPage.getKey(i).getId() == id) {
+				flag = true;
 				if (currentPage.isLeaf()) {
 					// Delete and verify nKeys
 					currentPage.removeKey(id);
@@ -283,19 +284,18 @@ public class BTree {
 					deleteData(currentPage.getChild(i), currentPage, i, id);
 				}
 			} else if (currentPage.getKey(i).getId() > id) {
+				flag = true;
 				if (currentPage.getChild(i) != null) {
 					// Moving to the left child
 					deleteData(currentPage.getChild(i), currentPage, i, id);
 				} else {
 					return null;
-				}
-				
-				flag = true;
+				}	
 			}
 		}
 		
 		if (!flag) {
-			
+			deleteData(currentPage.getChild(i), currentPage, i, id);
 		}
 		
 		return currentPage;
@@ -375,7 +375,7 @@ public class BTree {
 	// * Redistribution: transfers a key from a page to another
 	// ** Rule: the number of keys of the page that will transfer needs to be greater than the minimum value of keys
 	public Boolean redistribute(Page currentPage, Page parent, int pos, int index, int id) {
-		System.out.println("Entou na função de redistribuição");
+		System.out.println("Entrou na função de redistribuição");
 		int parentPos;
 		
 		if (pos - 1 >= 0) {
